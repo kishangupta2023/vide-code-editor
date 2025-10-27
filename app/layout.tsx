@@ -44,9 +44,9 @@ export default async function RootLayout({
           >
             <div className="flex flex-col min-h-screen">
               <Toaster/>
-    <div className="flex-1">
-{children}
-    </div>
+           <div className="flex-1">
+                  {children}
+          </div>
             </div>
         
         </ThemeProvider>
