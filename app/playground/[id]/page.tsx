@@ -22,14 +22,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { PlaygroundEditor } from "@/modules/playground/components/playground-editor";
 // import LoadingStep from "@/modules/playground/components/loader";
 // import {PlaygroundEditor} from "@/modules/playground/components/playground-editor";
 import { TemplateFileTree } from "@/modules/playground/components/playground-explorer";
 // import ToggleAI from "@/modules/playground/components/toggle-ai";
-// import { useAISuggestions } from "@/modules/playground/hooks/useAISuggestion";
-// import { useFileExplorer } from "@/modules/playground/hooks/useFileExplorer";
+import { useAISuggestions } from "@/modules/playground/hooks/useAISuggestion";
+import { useFileExplorer } from "@/modules/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/modules/playground/hooks/usePlayground";
-// import { findFilePath } from "@/modules/playground/lib";
+import { findFilePath } from "@/modules/playground/lib";
 import {
   TemplateFile,
   TemplateFolder,
@@ -62,27 +63,27 @@ const MainPlaygroundPage = () => {
   const { playgroundData, templateData, isLoading, error, saveTemplateData } =
     usePlayground(id);
 
-    // const aiSuggestions = useAISuggestions();
+    const aiSuggestions = useAISuggestions();
 
-  // const {
-  //   setTemplateData,
-  //   setActiveFileId,
-    // setPlaygroundId,
-  //   setOpenFiles,
-  //   activeFileId,
-  //   closeAllFiles,
-  //   closeFile,
-  //   openFile,
-  //   openFiles,
+  const {
+    setTemplateData,
+    setActiveFileId,
+    setPlaygroundId,
+    setOpenFiles,
+    activeFileId,
+    closeAllFiles,
+    closeFile,
+    openFile,
+    openFiles,
 
-  //   handleAddFile,
-  //   handleAddFolder,
-  //   handleDeleteFile,
-  //   handleDeleteFolder,
-  //   handleRenameFile,
-  //   handleRenameFolder,
-  //   updateFileContent
-  // } = useFileExplorer();
+    handleAddFile,
+    handleAddFolder,
+    handleDeleteFile,
+    handleDeleteFolder,
+    handleRenameFile,
+    handleRenameFolder,
+    updateFileContent
+  } = useFileExplorer();
 
   // const {
   //   serverUrl,
@@ -95,15 +96,15 @@ const MainPlaygroundPage = () => {
 
   const lastSyncedContent = useRef<Map<string, string>>(new Map());
 
-  // useEffect(() => {
-  //   setPlaygroundId(id);
-  // }, [id, setPlaygroundId]);
+  useEffect(() => {
+    setPlaygroundId(id);
+  }, [id, setPlaygroundId]);
 
-  // useEffect(() => {
-  //   if (templateData && !openFiles.length) {
-  //     setTemplateData(templateData);
-  //   }
-  // }, [templateData, setTemplateData, openFiles.length]);
+  useEffect(() => {
+    if (templateData && !openFiles.length) {
+      setTemplateData(templateData);
+    }
+  }, [templateData, setTemplateData, openFiles.length]);
 
   // Create wrapper functions that pass saveTemplateData
   // const wrappedHandleAddFile = useCallback(
@@ -170,12 +171,12 @@ const MainPlaygroundPage = () => {
 //     [handleRenameFolder, saveTemplateData]
 //   );
 
-//   const activeFile = openFiles.find((file) => file.id === activeFileId);
-//   const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges);
+  const activeFile = openFiles.find((file) => file.id === activeFileId);
+  const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges);
 
-//   const handleFileSelect = (file: TemplateFile) => {
-//     openFile(file);
-//   };
+  const handleFileSelect = (file: TemplateFile) => {
+    openFile(file);
+  };
 
 //   const handleSave = useCallback(
 //     async (fileId?: string) => {
@@ -350,13 +351,12 @@ const MainPlaygroundPage = () => {
   //   );
   // }
 
-  const activeFile = "sample.txt"
   return (
     <TooltipProvider>
       <>
         <TemplateFileTree
-          data={templateData}
-          onFileSelect={()=>{}}
+          data={templateData!}
+          onFileSelect={handleFileSelect}
           selectedFile={activeFile}
           title="File Explorer"
           onAddFile={()=>{}}
@@ -376,41 +376,44 @@ const MainPlaygroundPage = () => {
                 <h1 className="text-sm font-medium">
                   {playgroundData?.title || "Code Playground"}
                 </h1>
-                {/* <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {openFiles.length} File(s) Open
                   {hasUnsavedChanges && " • Unsaved changes"}
-                </p> */}
+                </p>
               </div>
 
               <div className="flex items-center gap-1">
                 <Tooltip>
                   <TooltipTrigger>
-                    {/* <Button
+                    <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleSave()}
+                      onClick={() =>{}}
                       disabled={!activeFile || !activeFile.hasUnsavedChanges}
                     >
                       <Save className="h-4 w-4" />
-                    </Button> */}
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Save (Ctrl+S)</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    {/* <Button
+                    <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleSaveAll}
+                      onClick={()=>{}}
                       disabled={!hasUnsavedChanges}
                     >
                       <Save className="h-4 w-4" /> All
-                    </Button> */}
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>Save All (Ctrl+Shift+S)</TooltipContent>
                 </Tooltip>
 
+               <Button variant={"default"} size={"icon"}>
+                <Bot className="size-4"/>
+               </Button>
                {/* <ToggleAI
                 isEnabled={aiSuggestions.isEnabled}
                 onToggle={aiSuggestions.toggleEnabled}
@@ -430,20 +433,20 @@ const MainPlaygroundPage = () => {
                       {isPreviewVisible ? "Hide" : "Show"} Preview
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    {/* <DropdownMenuItem onClick={closeAllFiles}>
+                    <DropdownMenuItem onClick={closeAllFiles}>
                       Close All Files
-                    </DropdownMenuItem> */}
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
           </header>
 
-          {/* <div className="h-[calc(100vh-4rem)]">
+          <div className="h-[calc(100vh-4rem)]">
             {openFiles.length > 0 ? (
               <div className="h-full flex flex-col">
-                <div className="border-b bg-muted/30"> */}
-                  {/* <Tabs
+                <div className="border-b bg-muted/30">
+                  <Tabs
                     value={activeFileId || ""}
                     onValueChange={setActiveFileId}
                   >
@@ -487,15 +490,15 @@ const MainPlaygroundPage = () => {
                           Close All
                         </Button>
                       )}
-                    </div> */}
-                  {/* </Tabs> */}
-                {/* </div>
+                    </div>
+                  </Tabs>
+                </div>
                 <div className="flex-1">
                   <ResizablePanelGroup
                     direction="horizontal"
                     className="h-full"
                   >
-                    <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
+                  <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
                       <PlaygroundEditor
                         activeFile={activeFile}
                         content={activeFile?.content || ""}
@@ -514,39 +517,39 @@ const MainPlaygroundPage = () => {
                           aiSuggestions.fetchSuggestion(type, editor)
                         }
                       />
-                    </ResizablePanel> */}
+                    </ResizablePanel>
 
-                    {/* {isPreviewVisible && ( */}
-          {/* //             <> */}
-          {/* //               <ResizableHandle /> */}
-          {/* //               <ResizablePanel defaultSize={50}> */}
-          {/* //                 <WebContainerPreview */}
-          {/* //                   templateData={templateData} */}
-          {/* //                   instance={instance} */}
-          {/* //                   writeFileSync={writeFileSync} */}
-          {/* //                   isLoading={containerLoading}
-          //                   error={containerError}
-          //                   serverUrl={serverUrl!}
-          //                   forceResetup={false}
-          //                 />
-          //               </ResizablePanel>
-          //             </>
-          //           )}
-          //         </ResizablePanelGroup> */}
-          {/* //       </div>
-          //     </div> */}
-          {/* //   ) : (
-          //     <div className="flex flex-col h-full items-center justify-center text-muted-foreground gap-4">
-          //       <FileText className="h-16 w-16 text-gray-300" />
-          //       <div className="text-center">
-          //         <p className="text-lg font-medium">No files open</p>
-          //         <p className="text-sm text-gray-500">
-          //           Select a file from the sidebar to start editing
-          //         </p>
-          //       </div>
-          //     </div>
-          //   )}
-          // </div> */}
+                    {/* {isPreviewVisible && (
+                      <>
+                        <ResizableHandle />
+                        <ResizablePanel defaultSize={50}>
+                          <WebContainerPreview
+                            templateData={templateData}
+                            instance={instance}
+                            writeFileSync={writeFileSync}
+                            isLoading={containerLoading}
+                            error={containerError}
+                            serverUrl={serverUrl!}
+                            forceResetup={false}
+                          />
+                        </ResizablePanel>
+                      </>
+                    )} */}
+                  </ResizablePanelGroup>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col h-full items-center justify-center text-muted-foreground gap-4">
+                <FileText className="h-16 w-16 text-gray-300" />
+                <div className="text-center">
+                  <p className="text-lg font-medium">No files open</p>
+                  <p className="text-sm text-gray-500">
+                    Select a file from the sidebar to start editing
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </SidebarInset>
       </>
     </TooltipProvider>
