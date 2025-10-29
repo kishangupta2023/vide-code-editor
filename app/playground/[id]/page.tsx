@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/tooltip";
 import { PlaygroundEditor } from "@/modules/playground/components/playground-editor";
 // import LoadingStep from "@/modules/playground/components/loader";
-// import {PlaygroundEditor} from "@/modules/playground/components/playground-editor";
 import { TemplateFileTree } from "@/modules/playground/components/playground-explorer";
 // import ToggleAI from "@/modules/playground/components/toggle-ai";
 import { useAISuggestions } from "@/modules/playground/hooks/useAISuggestion";
@@ -35,8 +34,8 @@ import {
   TemplateFile,
   TemplateFolder,
 } from "@/modules/playground/lib/path-to-json";
-// import WebContainerPreview from "@/modules/webcontainers/components/webcontainer-preview";
-// import { useWebContainer } from "@/modules/webcontainers/hooks/useWebContainer";
+import WebContainerPreview from "@/modules/webcontainers/components/webcontainer-preview";
+import { useWebContainer } from "@/modules/webcontainers/hooks/useWebContainer";
 import {
   AlertCircle,
   Bot,
@@ -85,14 +84,14 @@ const MainPlaygroundPage = () => {
     updateFileContent
   } = useFileExplorer();
 
-  // const {
-  //   serverUrl,
-  //   isLoading: containerLoading,
-  //   error: containerError,
-  //   instance,
-  //   writeFileSync,
-  //   // @ts-ignore
-  // } = useWebContainer({ templateData });
+  const {
+    serverUrl,
+    isLoading: containerLoading,
+    error: containerError,
+    instance,
+    writeFileSync,
+    // @ts-ignore
+  } = useWebContainer({ templateData });
 
   const lastSyncedContent = useRef<Map<string, string>>(new Map());
 
@@ -519,7 +518,7 @@ const MainPlaygroundPage = () => {
                       />
                     </ResizablePanel>
 
-                    {/* {isPreviewVisible && (
+                    {isPreviewVisible && (
                       <>
                         <ResizableHandle />
                         <ResizablePanel defaultSize={50}>
@@ -534,7 +533,7 @@ const MainPlaygroundPage = () => {
                           />
                         </ResizablePanel>
                       </>
-                    )} */}
+                    )}
                   </ResizablePanelGroup>
                 </div>
               </div>
