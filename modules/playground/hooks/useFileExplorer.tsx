@@ -151,7 +151,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
   },
 
   handleAddFile:async(newFile , parentPath , writeFileSync , instance , saveTemplateData)=>{
-        const { templateData } = get();
+    const { templateData } = get();
     if (!templateData) return;
 
     try {
@@ -190,7 +190,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-    handleAddFolder: async (newFolder, parentPath, instance, saveTemplateData) => {
+  handleAddFolder: async (newFolder, parentPath, instance, saveTemplateData) => {
     const { templateData } = get();
     if (!templateData) return;
 
@@ -228,7 +228,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-    handleDeleteFile: async (file, parentPath, saveTemplateData) => {
+  handleDeleteFile: async (file, parentPath, saveTemplateData) => {
     const { templateData, openFiles } = get();
     if (!templateData) return;
 
@@ -276,7 +276,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-    handleDeleteFolder: async (folder, parentPath, saveTemplateData) => {
+  handleDeleteFolder: async (folder, parentPath, saveTemplateData) => {
     const { templateData } = get();
     if (!templateData) return;
 
@@ -328,7 +328,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-   handleRenameFile: async (
+  handleRenameFile: async (
     file,
     newFilename,
     newExtension,
@@ -446,7 +446,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
- updateFileContent: (fileId, content) => {
+  updateFileContent: (fileId, content) => {
     set((state) => ({
       openFiles: state.openFiles.map((file) =>
         file.id === fileId
