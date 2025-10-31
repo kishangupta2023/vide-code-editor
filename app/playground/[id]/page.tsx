@@ -62,7 +62,7 @@ const MainPlaygroundPage = () => {
   const { playgroundData, templateData, isLoading, error, saveTemplateData } =
     usePlayground(id);
 
-    const aiSuggestions = useAISuggestions();
+  const aiSuggestions = useAISuggestions();
 
   const {
     setTemplateData,
@@ -383,7 +383,7 @@ const MainPlaygroundPage = () => {
 
               <div className="flex items-center gap-1">
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <Button
                       size="sm"
                       variant="outline"
@@ -509,7 +509,7 @@ const MainPlaygroundPage = () => {
                         suggestionPosition={aiSuggestions.position}
                         onAcceptSuggestion={(editor , monaco)=>aiSuggestions.acceptSuggestion(editor , monaco)}
 
-                          onRejectSuggestion={(editor) =>
+                        onRejectSuggestion={(editor) =>
                           aiSuggestions.rejectSuggestion(editor)
                         }
                         onTriggerSuggestion={(type, editor) =>
