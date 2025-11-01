@@ -4,7 +4,7 @@ import { Github as LucideGithub } from "lucide-react";
 export function Footer() {
   const socialLinks = [
     {
-      href: "https://github.com/kishangupta2023/vide-code-editor.git",
+      href: "https://github.com",
       icon: (
         <LucideGithub className="w-5 h-5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />
       ),

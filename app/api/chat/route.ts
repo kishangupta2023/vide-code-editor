@@ -27,29 +27,25 @@ Keep responses concise but comprehensive. Use code blocks with language specific
 
   const fullMessages = [{ role: "system", content: systemPrompt }, ...messages]
 
-  const prompt = fullMessages.map((msg) => `${msg.role}: ${msg.content}`).join("\n\n")
+  // const prompt = fullMessages.map((msg) => `${msg.role}: ${msg.content}`).join("\n\n")
 
   const controller = new AbortController()
+
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "codellama:latest",
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 1000,
-          num_predict: 1000,
-          repeat_penalty: 1.1,
-          context_length: 4096,
-        },
+        model: "llama-3.3-70b-versatile", // ✅ Use Groq model here
+        messages: fullMessages,           // ✅ Correct field for Groq API
+        temperature: 0.7,
+        top_p: 0.9,
+        max_tokens: 1000,
       }),
       signal: controller.signal,
     })
@@ -63,10 +59,14 @@ Keep responses concise but comprehensive. Use code blocks with language specific
     }
 
     const data = await response.json()
-    if (!data.response) {
+   // ✅ Groq returns `data.choices[0].message.content`
+    const aiMessage = data.choices?.[0]?.message?.content
+    if (!aiMessage) {
       throw new Error("No response from AI model")
     }
-    return data.response.trim()
+
+    return aiMessage.trim()
+    
   } catch (error) {
     clearTimeout(timeoutId)
     if ((error as Error).name === "AbortError") {
