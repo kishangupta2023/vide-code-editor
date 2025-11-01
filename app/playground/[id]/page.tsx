@@ -38,7 +38,6 @@ import WebContainerPreview from "@/modules/webcontainers/components/webcontainer
 import { useWebContainer } from "@/modules/webcontainers/hooks/useWebContainer";
 import {
   AlertCircle,
-  Bot,
   FileText,
   FolderOpen,
   Save,
@@ -48,40 +47,48 @@ import {
 import { useParams } from "next/navigation";
 import React, {
   useCallback,
-  useEffect,
-  useReducer,
   useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
 
-const MainPlaygroundPage = () => {
+import { ConfirmationDialog } from "@/modules/playground/components/dialogs/confirmation-dialog";
+
+const MainPlaygroundPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+
+  // UI state
+  const [confirmationDialog, setConfirmationDialog] = useState({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+    onCancel: () => {},
+  });
+
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
+  // Custom hooks
   const { playgroundData, templateData, isLoading, error, saveTemplateData } =
     usePlayground(id);
-
   const aiSuggestions = useAISuggestions();
-
   const {
-    setTemplateData,
-    setActiveFileId,
-    setPlaygroundId,
-    setOpenFiles,
     activeFileId,
     closeAllFiles,
-    closeFile,
     openFile,
-    openFiles,
-
+    closeFile,
+    updateFileContent,
     handleAddFile,
     handleAddFolder,
     handleDeleteFile,
     handleDeleteFolder,
     handleRenameFile,
     handleRenameFolder,
-    updateFileContent
+    openFiles,
+    setTemplateData,
+    setActiveFileId,
+    setPlaygroundId,
+    setOpenFiles,
   } = useFileExplorer();
 
   const {
@@ -95,12 +102,16 @@ const MainPlaygroundPage = () => {
 
   const lastSyncedContent = useRef<Map<string, string>>(new Map());
 
-  useEffect(() => {
+  // Set template data when playground loads
+  React.useEffect(() => {
     setPlaygroundId(id);
   }, [id, setPlaygroundId]);
 
-  useEffect(() => {
+  // Initialize zustand templateData from usePlayground only on first load
+  React.useEffect(() => {
     if (templateData && !openFiles.length) {
+
+      
       setTemplateData(templateData);
     }
   }, [templateData, setTemplateData, openFiles.length]);
@@ -183,7 +194,6 @@ const MainPlaygroundPage = () => {
       if (!targetFileId) return;
 
       const fileToSave = openFiles.find((f) => f.id === targetFileId);
-
       if (!fileToSave) return;
 
       const latestTemplateData = useFileExplorer.getState().templateData;
@@ -198,13 +208,13 @@ const MainPlaygroundPage = () => {
           return;
         }
 
-      const updatedTemplateData = JSON.parse(
+        // Update file content in template data (clone for immutability)
+        const updatedTemplateData = JSON.parse(
           JSON.stringify(latestTemplateData)
         );
-
         // @ts-ignore
-      const updateFileContent = (items: any[]) =>
-            // @ts-ignore
+        const updateFileContent = (items: any[]) =>
+          // @ts-ignore
           items.map((item) => {
             if ("folderName" in item) {
               return { ...item, items: updateFileContent(item.items) };
@@ -220,7 +230,7 @@ const MainPlaygroundPage = () => {
           updatedTemplateData.items
         );
 
-          // Sync with WebContainer
+        // Sync with WebContainer
         if (writeFileSync) {
           await writeFileSync(filePath, fileToSave.content);
           lastSyncedContent.current.set(fileToSave.id, fileToSave.content);
@@ -229,9 +239,11 @@ const MainPlaygroundPage = () => {
           }
         }
 
+        // Use saveTemplateData to persist changes
         const newTemplateData = await saveTemplateData(updatedTemplateData);
-        setTemplateData(newTemplateData || updatedTemplateData);
-       // Update open files
+        setTemplateData(newTemplateData ?? updatedTemplateData);
+
+        // Update open files
         const updatedOpenFiles = openFiles.map((f) =>
           f.id === targetFileId
             ? {
@@ -244,11 +256,11 @@ const MainPlaygroundPage = () => {
         );
         setOpenFiles(updatedOpenFiles);
 
-    toast.success(
+        toast.success(
           `Saved ${fileToSave.filename}.${fileToSave.fileExtension}`
         );
       } catch (error) {
-         console.error("Error saving file:", error);
+        console.error("Error saving file:", error);
         toast.error(
           `Failed to save ${fileToSave.filename}.${fileToSave.fileExtension}`
         );
@@ -282,18 +294,19 @@ const MainPlaygroundPage = () => {
     }
   };
 
-
-  useEffect(()=>{
-    const handleKeyDown = (e:KeyboardEvent)=>{
-      if(e.ctrlKey && e.key === "s"){
-        e.preventDefault()
-        handleSave()
+  // Add event to save file by click ctrl + s
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        handleSave();
       }
-    }
-     window.addEventListener("keydown", handleKeyDown);
-     return () => window.removeEventListener("keydown", handleKeyDown);
-  },[handleSave]);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSave]);
 
+  // Error state
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
@@ -354,7 +367,7 @@ const MainPlaygroundPage = () => {
     <TooltipProvider>
       <>
         <TemplateFileTree
-          data={templateData!}
+          data={templateData}
           onFileSelect={handleFileSelect}
           selectedFile={activeFile}
           title="File Explorer"
@@ -365,6 +378,7 @@ const MainPlaygroundPage = () => {
           onRenameFile={wrappedHandleRenameFile}
           onRenameFolder={wrappedHandleRenameFolder}
         />
+
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
@@ -373,10 +387,10 @@ const MainPlaygroundPage = () => {
             <div className="flex flex-1 items-center gap-2">
               <div className="flex flex-col flex-1">
                 <h1 className="text-sm font-medium">
-                  {playgroundData?.title || "Code Playground"}
+                  {playgroundData?.name || "Code Playground"}
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  {openFiles.length} File(s) Open
+                  {openFiles.length} file(s) open
                   {hasUnsavedChanges && " • Unsaved changes"}
                 </p>
               </div>
@@ -387,7 +401,7 @@ const MainPlaygroundPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>handleSave()}
+                      onClick={() => handleSave()}
                       disabled={!activeFile || !activeFile.hasUnsavedChanges}
                     >
                       <Save className="h-4 w-4" />
@@ -401,7 +415,7 @@ const MainPlaygroundPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={()=>handleSaveAll()}
+                      onClick={handleSaveAll}
                       disabled={!hasUnsavedChanges}
                     >
                       <Save className="h-4 w-4" /> All
@@ -410,14 +424,11 @@ const MainPlaygroundPage = () => {
                   <TooltipContent>Save All (Ctrl+Shift+S)</TooltipContent>
                 </Tooltip>
 
-               <Button variant={"default"} size={"icon"}>
-                <Bot className="size-4"/>
-               </Button>
-               <ToggleAI
-                isEnabled={aiSuggestions.isEnabled}
-                onToggle={aiSuggestions.toggleEnabled}
-                suggestionLoading={aiSuggestions.isLoading}
-               />
+                <ToggleAI
+                  isEnabled={aiSuggestions.isEnabled}
+                  onToggle={aiSuggestions.toggleEnabled}
+                  suggestionLoading={aiSuggestions.isLoading}
+                />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -444,6 +455,7 @@ const MainPlaygroundPage = () => {
           <div className="h-[calc(100vh-4rem)]">
             {openFiles.length > 0 ? (
               <div className="h-full flex flex-col">
+                {/* File Tabs */}
                 <div className="border-b bg-muted/30">
                   <Tabs
                     value={activeFileId || ""}
@@ -492,23 +504,26 @@ const MainPlaygroundPage = () => {
                     </div>
                   </Tabs>
                 </div>
+
+                {/* Editor and Preview */}
                 <div className="flex-1">
                   <ResizablePanelGroup
                     direction="horizontal"
                     className="h-full"
                   >
-                  <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
+                    <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
                       <PlaygroundEditor
                         activeFile={activeFile}
                         content={activeFile?.content || ""}
-                        onContentChange={(value) => 
-                          activeFileId && updateFileContent(activeFileId , value)
+                        onContentChange={(value) =>
+                          activeFileId && updateFileContent(activeFileId, value)
                         }
                         suggestion={aiSuggestions.suggestion}
                         suggestionLoading={aiSuggestions.isLoading}
                         suggestionPosition={aiSuggestions.position}
-                        onAcceptSuggestion={(editor , monaco)=>aiSuggestions.acceptSuggestion(editor , monaco)}
-
+                        onAcceptSuggestion={(editor, monaco) =>
+                          aiSuggestions.acceptSuggestion(editor, monaco)
+                        }
                         onRejectSuggestion={(editor) =>
                           aiSuggestions.rejectSuggestion(editor)
                         }
@@ -550,6 +565,15 @@ const MainPlaygroundPage = () => {
             )}
           </div>
         </SidebarInset>
+
+      <ConfirmationDialog
+      isOpen={confirmationDialog.isOpen}
+      title={confirmationDialog.title}
+      description={confirmationDialog.description}
+      onConfirm={confirmationDialog.onConfirm}
+      onCancel={confirmationDialog.onCancel}
+      setIsOpen={(open) => setConfirmationDialog((prev) => ({ ...prev, isOpen: open }))}
+      />
       </>
     </TooltipProvider>
   );

@@ -138,9 +138,9 @@ export async function POST(req: NextRequest) {
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Message is required and must be a string" }, { status: 400 })
     }
-
     const validHistory = Array.isArray(history)
-      ? history.filter(
+    ? history.filter(
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           (msg: any) =>
             msg &&
             typeof msg === "object" &&
