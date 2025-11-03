@@ -31,6 +31,7 @@
 | Auth          | NextAuth (Google + GitHub OAuth)             |
 | Editor        | Monaco Editor                                |
 | AI Suggestion | Ollama (LLMs running locally via Docker)     |
+                  and also Groq Api for online server          |
 | Runtime       | WebContainers                                |
 | Terminal      | xterm.js                                     |
 | Database      | MongoDB (via DATABASE_URL)                   |
