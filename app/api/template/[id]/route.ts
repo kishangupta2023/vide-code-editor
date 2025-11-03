@@ -45,37 +45,56 @@ if (!playground) {
   }
 
   try {
-    // Resolve template path correctly for both local + Vercel
-   const localPath = path.join(process.cwd(), templatePath);
-   const vercelPath = path.join(process.cwd(), ".next", "server", templatePath);
+  const localPath = path.join(process.cwd(), templatePath);
+  const vercelServerPath = path.join(process.cwd(), ".next", "server", templatePath);
+  const vercelRootPath = path.join("/var/task/.next/server", templatePath); // sometimes needed in Vercel
 
-    // Choose whichever exists
-   const inputPath = await fs
-    .access(localPath)
-    .then(() => localPath)
-    .catch(async () => {
-      await fs.access(vercelPath);
-      return vercelPath;
-    });
-    const outputFile = path.join(process.cwd() , `output/${templateKey}.json`);
+  let inputPath: string | null = null;
 
-    await saveTemplateStructureToJson(inputPath , outputFile);
-    const result = await readTemplateStructureFromJson(outputFile);
-
-
-    // Validate the JSON structure before saving
-    if (!validateJsonStructure(result.items)) {
-      return Response.json({ error: "Invalid JSON structure" }, { status: 500 });
+  // Try local first
+  try {
+    await fs.access(localPath);
+    inputPath = localPath;
+  } catch {
+    // Try .next/server in cwd
+    try {
+      await fs.access(vercelServerPath);
+      inputPath = vercelServerPath;
+    } catch {
+      // Try absolute Vercel server path
+      try {
+        await fs.access(vercelRootPath);
+        inputPath = vercelRootPath;
+      } catch {
+        console.error("❌ Template file not found in any location:", {
+          localPath,
+          vercelServerPath,
+          vercelRootPath,
+        });
+        return Response.json({ error: "Template not found on server" }, { status: 500 });
+      }
     }
-
-    await fs.unlink(outputFile)
-
-    return Response.json({ success: true, templateJson: result }, { status: 200 });
-    
-  } catch (error) {
-      console.error("Error generating template JSON:", error);
-    return Response.json({ error: "Failed to generate template" }, { status: 500 });
   }
+
+  console.log("✅ Using template path:", inputPath);
+
+  const outputFile = path.join(process.cwd(), `output/${templateKey}.json`);
+
+  await saveTemplateStructureToJson(inputPath, outputFile);
+  const result = await readTemplateStructureFromJson(outputFile);
+
+  if (!validateJsonStructure(result.items)) {
+    return Response.json({ error: "Invalid JSON structure" }, { status: 500 });
+  }
+
+  await fs.unlink(outputFile);
+
+  return Response.json({ success: true, templateJson: result }, { status: 200 });
+} catch (error) {
+  console.error("💥 Error generating template JSON:", error);
+  return Response.json({ error: "Failed to generate template" }, { status: 500 });
+}
+
 
 
 }
