@@ -1,6 +1,4 @@
-import {
-  readTemplateStructureFromJson,
-} from "@/modules/playground/lib/path-to-json";
+import { scanTemplateDirectory } from "@/modules/playground/lib/path-to-json";
 import { db } from "@/lib/db";
 import { templatePaths } from "@/lib/template";
 import path from "path";
@@ -42,27 +40,28 @@ export async function GET(
     return Response.json({ error: "Invalid template" }, { status: 404 });
   }
 
-  try {
-    // ✅ Safely reference public folder
-    const cleanedTemplatePath = templatePath.replace(/^\/+/, "");
-    const inputPath = path.join(process.cwd(), "public", cleanedTemplatePath);
+ try {
+  // ✅ Safely reference templates inside /public
+  const cleanedTemplatePath = templatePath.replace(/^\/+/, "");
+  const inputPath = path.join(process.cwd(), "public", cleanedTemplatePath);
 
-    console.log("✅ Using template path:", inputPath);
+  console.log("✅ Using template path:", inputPath);
 
-    await fs.access(inputPath).catch(() => {
-      throw new Error(`Template not found at ${inputPath}`);
-    });
+  // Verify the template exists
+  await fs.access(inputPath).catch(() => {
+    throw new Error(`Template not found at ${inputPath}`);
+  });
 
-    // ✅ No file writing
-    const result = await readTemplateStructureFromJson(inputPath);
+  // ✅ Scan the directory directly — no writes
+  const result = await scanTemplateDirectory(inputPath);
 
-    if (!validateJsonStructure(result.items)) {
-      return Response.json({ error: "Invalid JSON structure" }, { status: 500 });
-    }
-
-    return Response.json({ success: true, templateJson: result }, { status: 200 });
-  } catch (error) {
-    console.error("💥 Error generating template JSON:", error);
-    return Response.json({ error: "Failed to generate template" }, { status: 500 });
+  if (!validateJsonStructure(result.items)) {
+    return Response.json({ error: "Invalid JSON structure" }, { status: 500 });
   }
+
+  return Response.json({ success: true, templateJson: result }, { status: 200 });
+} catch (error) {
+  console.error("💥 Error generating template JSON:", error);
+  return Response.json({ error: "Failed to generate template" }, { status: 500 });
+}
 }
