@@ -45,7 +45,18 @@ if (!playground) {
   }
 
   try {
-    const inputPath = path.join(process.cwd() , templatePath);
+    // Resolve template path correctly for both local + Vercel
+   const localPath = path.join(process.cwd(), templatePath);
+   const vercelPath = path.join(process.cwd(), ".next", "server", templatePath);
+
+    // Choose whichever exists
+   const inputPath = await fs
+    .access(localPath)
+    .then(() => localPath)
+    .catch(async () => {
+      await fs.access(vercelPath);
+      return vercelPath;
+    });
     const outputFile = path.join(process.cwd() , `output/${templateKey}.json`);
 
     await saveTemplateStructureToJson(inputPath , outputFile);
