@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && mkdir -p .next/server/vibecode-starters && cp -r vibecode-starters/* .next/server/vibecode-starters/ || true",
+    "build": "next build && mkdir -p .next/server/vibecode-starters && cp -r vibecode-starters/* .next/server/vibecode-starters/",
     "start": "next start",
     "lint": "eslint"
  },
