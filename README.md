@@ -31,7 +31,7 @@
 | Auth          | NextAuth (Google + GitHub OAuth)             |
 | Editor        | Monaco Editor                                |
 | AI Suggestion | Ollama (LLMs running locally via Docker)     |
-                  and also Groq Api for online server          |
+| AI Suggestion | Groq Api (For running it on vercel)          |
 | Runtime       | WebContainers                                |
 | Terminal      | xterm.js                                     |
 | Database      | MongoDB (via DATABASE_URL)                   |
