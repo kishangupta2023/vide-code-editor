@@ -123,8 +123,15 @@ export const PlaygroundEditor = ({
           }
         },
         freeInlineCompletions: (completions: any) => {
-          console.log("freeInlineCompletions called")
+          console.log("freeInlineCompletions called",{length:completions?.items?.length ?? 0});
         },
+          // <-- ADD THIS METHOD to satisfy Monaco's type requirements
+       disposeInlineCompletions: (completions: any, token?: any) => {
+         // No-op is fine; this method exists so TypeScript is happy.
+           // Use this to cancel/cleanup any resources associated with the completions if needed.
+          console.log("disposeInlineCompletions called", { length: completions?.items?.length ?? 0 });
+       },
+
       }
     },
     [suggestion, suggestionPosition],

@@ -1149,6 +1149,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                             code: ({
                               children,
                               className,
+                              // @ts-ignore
                               inline: _inline,
                             }) => (
                               <EnhancedCodeBlock
