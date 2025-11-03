@@ -44,18 +44,20 @@ export async function GET(
   }
 
   try {
-    // ✅ Always load from /public now
-    const inputPath = path.join(process.cwd(), "public", templatePath);
+    // ✅ Fix: remove leading slash safely
+    const cleanedTemplatePath = templatePath.replace(/^\/+/, "");
+    const inputPath = path.join(process.cwd(), "public", cleanedTemplatePath);
+
     console.log("✅ Using template path:", inputPath);
 
-    // Verify it exists
+    // Verify the file/folder exists
     await fs.access(inputPath).catch(() => {
       throw new Error(`Template not found at ${inputPath}`);
     });
 
     const outputFile = path.join(process.cwd(), `output/${templateKey}.json`);
-    await saveTemplateStructureToJson(inputPath, outputFile);
 
+    await saveTemplateStructureToJson(inputPath, outputFile);
     const result = await readTemplateStructureFromJson(outputFile);
 
     if (!validateJsonStructure(result.items)) {
